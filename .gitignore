@@ -1,0 +1,13 @@
+# 데이터셋 제외
+VOC_PCB/
+
+# 가상환경 및 캐시 제외
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# OS 파일
+.DS_Store
+Thumbs.db
