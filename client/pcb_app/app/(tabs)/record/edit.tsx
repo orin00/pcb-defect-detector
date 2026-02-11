@@ -6,9 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../../../constants/Config'; 
 
-/** [식별명: 프로젝트 생성 화면] */
+// 프로젝트 생성 화면
 export default function RecordEdit() {
-  const params = useLocalSearchParams(); // params 전체 수신
+  const params = useLocalSearchParams();
   const { id, model_name, from } = params;
   const router = useRouter();
   
@@ -68,7 +68,6 @@ export default function RecordEdit() {
         <TouchableOpacity 
           style={styles.headerLeft} 
           onPress={() => {
-            // [수정] 전달받은 from 경로가 있으면 해당 경로로, 없으면 기본 뒤로가기
             if (from) {
               router.replace(from as any);
             } else {

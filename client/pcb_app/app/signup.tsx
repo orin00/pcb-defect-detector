@@ -5,7 +5,7 @@ import axios from 'axios';
 import { API_URL } from '../constants/Config';
 import { Ionicons } from '@expo/vector-icons';
 
-/** [식별명: 회원가입 스크린] 부서명 입력 필드가 추가되었습니다. */
+// 회원가입 페이지
 export default function SignUpScreen() {
   const router = useRouter();
   const [formData, setFormData] = useState({ 
@@ -14,12 +14,12 @@ export default function SignUpScreen() {
     email: '', 
     password: '', 
     role: 'STAFF', 
-    dept_name: '' // 부서명 필드
+    dept_name: ''
   });
 
   const handleSignUp = async () => {
     try {
-      // 빈 값 검증 (부서명은 선택사항일 수 있으나 여기서는 포함하여 전송)
+      // 빈 값 검증
       if (!formData.corporate_name || !formData.name || !formData.email || !formData.password) {
         Alert.alert("알림", "필수 항목을 모두 입력해주세요.");
         return;
@@ -55,7 +55,6 @@ export default function SignUpScreen() {
           placeholder="이름" 
           onChangeText={(t) => setFormData({...formData, name: t})} 
         />
-        {/* 추가된 부서명 입력 필드 */}
         <TextInput 
           style={styles.input} 
           placeholder="부서명 (예: 생산관리팀)" 

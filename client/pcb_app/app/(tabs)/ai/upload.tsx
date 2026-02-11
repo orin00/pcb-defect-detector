@@ -7,7 +7,6 @@ import {
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
-// [수정 핵심] SDK 54 대응을 위해 legacy API를 사용하여 readAsStringAsync 에러를 해결합니다.
 import * as FileSystem from 'expo-file-system/legacy'; 
 import { API_URL } from '../../../constants/Config';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,7 +78,7 @@ export default function AnalysisUploadScreen() {
     try {
       setLoading(true);
       
-      // [영구 규정 준수] EncodingType 대신 무조건 문자열 'base64' 사용
+      // EncodingType 대신 base64로 -> 이거 안하니까 에러남
       const excelBase64 = await FileSystem.readAsStringAsync(excelFile.uri, { 
         encoding: 'base64' 
       });
@@ -100,7 +99,6 @@ export default function AnalysisUploadScreen() {
         Alert.alert('성공', '분석 결과가 저장되었습니다.', [
           { 
             text: '확인', 
-            // [규정 준수] 기록 목록 화면으로 이동
             onPress: () => router.replace('/record' as any) 
           }
         ]);
@@ -201,7 +199,6 @@ const styles = StyleSheet.create({
   pickerTrigger: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderWidth: 1, borderColor: '#ced4da', borderRadius: 12, backgroundColor: '#fff' },
   pickerTriggerActive: { borderColor: '#007AFF', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
   pickerText: { fontSize: 16 },
-  // [복구] 기존 스크롤 기능을 유지하기 위해 maxHeight 설정을 하지 않습니다.
   optionsContainer: { borderWidth: 1, borderTopWidth: 0, borderColor: '#ced4da', borderBottomLeftRadius: 12, borderBottomRightRadius: 12, backgroundColor: '#fff' },
   optionItem: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f3f5' },
   optionText: { fontSize: 15 },

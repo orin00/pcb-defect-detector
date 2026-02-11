@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Stack, useRouter } from 'expo-router'; // [수정] Stack, useRouter 추가
+import { Stack, useRouter } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useIsFocused } from '@react-navigation/native';
 
-/** [식별명: 탭 메인홈] 화면이 포커스될 때마다 최신 세션 정보를 로드합니다. */
+// 로그인 하고 들어오면 표시되는 인덱스 페이지
 export default function TabHomeScreen() {
   const [userInfo, setUserInfo] = useState<any>(null);
-  const isFocused = useIsFocused(); // 현재 화면이 활성화되었는지 여부 확인
+  const isFocused = useIsFocused();
 
-  // isFocused가 true가 될 때(화면이 보일 때)마다 실행
   useEffect(() => {
     if (isFocused) {
       loadData();
@@ -26,7 +25,6 @@ export default function TabHomeScreen() {
       }
       
       if (session) {
-        // 저장소에 있는 최신 정보를 상태에 반영
         setUserInfo(JSON.parse(session));
       }
     } catch (e) {

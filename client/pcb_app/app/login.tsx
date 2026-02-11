@@ -5,7 +5,7 @@ import axios from 'axios';
 import { API_URL } from '../constants/Config';
 import * as SecureStore from 'expo-secure-store';
 
-/** [식별명: 로그인 스크린] 로그인 성공 시 /(tabs) 경로로 리다이렉트합니다. */
+// 로그인 페이지
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -22,9 +22,7 @@ export default function LoginScreen() {
       if (response.data.status === 'success') {
         const userInfoString = JSON.stringify(response.data.user_info);
 
-        // [수정 사항] 기기 및 웹 브라우저 세션 저장 로직
         if (Platform.OS !== 'web') {
-          // 기기 저장소에 정보 저장 (SecureStore 사용)
           await SecureStore.setItemAsync('user_session', userInfoString);
           if (isAutoLogin) {
             await SecureStore.setItemAsync('auto_login', 'true');
@@ -32,12 +30,10 @@ export default function LoginScreen() {
             await SecureStore.setItemAsync('auto_login', 'false');
           }
         } else {
-          // 웹 환경 저장소
           localStorage.setItem('user_session', userInfoString);
           localStorage.setItem('auto_login', isAutoLogin ? 'true' : 'false');
         }
 
-        // [핵심 수정] home_screen 대신 하단 탭 그룹의 메인으로 이동
         router.replace('/(tabs)');
       }
     } catch (error) {
@@ -64,7 +60,6 @@ export default function LoginScreen() {
         onChangeText={setPassword} 
       />
 
-      {/* 체크박스 커스텀 UI */}
       <TouchableOpacity 
         style={styles.checkboxArea} 
         onPress={() => setIsAutoLogin(!isAutoLogin)}
@@ -79,7 +74,6 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
 
-      {/* 회원가입 페이지 이동 버튼 */}
       <TouchableOpacity onPress={() => router.push('/signup')} style={styles.signupLink}>
         <Text style={styles.signupText}>계정이 없으신가요? 회원가입</Text>
       </TouchableOpacity>

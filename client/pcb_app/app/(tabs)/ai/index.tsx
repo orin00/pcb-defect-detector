@@ -36,7 +36,6 @@ export default function AIScreen() {
     }
   };
 
-  // 탐지 버튼: 단순히 분석 결과만 받아옴
   const handleDetect = async () => {
     if (!image || loading) return;
     setLoading(true);
@@ -59,19 +58,17 @@ export default function AIScreen() {
     }
   };
 
-  // [수정] 업로드 버튼 핸들러: 이동 로직으로 변경
   const goToUploadPage = () => {
     if (!resultImage) {
       Alert.alert("알림", "탐지를 먼저 완료해주세요.");
       return;
     }
 
-    // 분석 결과 기입 페이지로 파라미터를 담아 이동
     router.push({
       pathname: '/(tabs)/ai/upload',
       params: { 
         resultImage: resultImage, 
-        projectId: 1 // 실제로는 현재 선택된 프로젝트 ID를 보내야 합니다.
+        projectId: 1
       }
     });
   };
@@ -93,7 +90,6 @@ export default function AIScreen() {
           )}
         </View>
 
-        {/* 첫 번째 줄: 선택 및 탐지 */}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.pickButton} onPress={pickImage}>
             <Text style={styles.buttonText}>사진 선택</Text>
@@ -107,10 +103,9 @@ export default function AIScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* [수정된 버튼] */}
       <TouchableOpacity 
         style={[styles.uploadButton, (!resultImage || loading) && styles.disabledButton]} 
-        onPress={goToUploadPage} // 클릭 시 페이지 이동
+        onPress={goToUploadPage}
         disabled={!resultImage || loading}
       >
         <Ionicons name="create-outline" size={20} color="#fff" style={{marginRight: 8}} />

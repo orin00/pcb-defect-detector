@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform, Button, Text, Alert } from 'react-native';
 import { Redirect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { AppUsabilityQA } from '../constants/AppUsabilityQA';
 
-/** [식별명: 루트 진입점] 
- * 자동 로그인 여부와 실제 세션 데이터 존재 여부를 엄격하게 체크하여 
- * 로그인하지 않은 사용자는 절대로 (tabs) 내부로 진입할 수 없게 차단합니다.
- */
 export default function Index() {
   const [isReady, setIsReady] = useState(false);
   const [destination, setDestination] = useState<string>('/login');
+  const [isTestMode, setIsTestMode] = useState(false);
 
   useEffect(() => {
     const validateAuth = async () => {
@@ -29,10 +27,8 @@ export default function Index() {
         console.log("자동로그인:", isAuto);
         console.log("세션 존재:", session ? "YES" : "NO");
 
-        // [중요] 세션이 문자열 "null"이거나 비어있는 경우를 대비한 방어 로직
         if (isAuto === 'true' && session && session !== "null" && session !== "undefined") {
           const parsed = JSON.parse(session);
-          // 세션 데이터 내부에 id가 실재하는지 한 번 더 확인
           if (parsed && parsed.id) {
             setDestination('/(tabs)');
           } else {
@@ -45,25 +41,52 @@ export default function Index() {
         console.error("인증 검증 실패:", error);
         setDestination('/login');
       } finally {
-        setIsReady(true);
+        // QA 테스트를 위해 잠시 대기 상태를 유지할 수 있도록 변경 가능
+        if (!isTestMode) setIsReady(true);
       }
     };
 
     validateAuth();
-  }, []);
+  }, [isTestMode]);
+
+  // QA 테스트를 위한 화면 렌더링
+  if (isTestMode) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.qaTitle}>🛠️ 모바일 앱 사용성 QA 모드</Text>
+        <View style={styles.qaButtonGroup}>
+          <Button title="1. 네트워크 상태 체크 (ngrok)" onPress={() => AppUsabilityQA.testNetworkStability()} color="#2196F3" />
+          <View style={styles.spacer} />
+          <Button title="2. 고해상도 이미지 처리 테스트" onPress={() => AppUsabilityQA.testImageProcessing()} color="#4CAF50" />
+          <View style={styles.spacer} />
+          <Button title="3. 세션 강제 만료 및 리다이렉트" onPress={async () => {
+            await AppUsabilityQA.testSessionRedirect();
+            setIsTestMode(false); // 테스트 후 다시 인증 로직 가동
+          }} color="#F44336" />
+        </View>
+        <Button title="QA 모드 나가기" onPress={() => setIsTestMode(false)} color="#666" />
+      </View>
+    );
+  }
 
   if (!isReady) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#007AFF" />
+        
+        <View style={{ marginTop: 20 }}>
+          <Button title="QA 테스트 모드 진입" onPress={() => setIsTestMode(true)} color="#FF9800" />
+        </View>
       </View>
     );
   }
 
-  // replace 속성을 사용하여 히스토리에 남지 않게 강제 이동
   return <Redirect href={destination as any} />;
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 },
+  qaTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 30 },
+  qaButtonGroup: { width: '100%', marginBottom: 40 },
+  spacer: { height: 15 }
 });

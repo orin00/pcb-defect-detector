@@ -29,7 +29,6 @@ export default function AuthIndexScreen() {
 
       if (session) {
         const parsedData = JSON.parse(session);
-        // [검증용 로그] 터미널이나 디버거에서 dept_name이 있는지 반드시 확인하세요.
         console.log("현재 로드된 유저 정보:", parsedData);
         setUserInfo(parsedData);
       }
@@ -45,7 +44,6 @@ export default function AuthIndexScreen() {
         text: "로그아웃", 
         onPress: async () => {
           try {
-            // withCredentials: true를 추가하여 세션 쿠키를 함께 전송해야 할 수 있습니다.
             await axios.post(`${API_URL}/logout/`, {}, { withCredentials: true });
             
             if (Platform.OS !== 'web') {
@@ -96,7 +94,6 @@ export default function AuthIndexScreen() {
       <View style={styles.infoSection}>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>부서</Text>
-          {/* [확인] 데이터가 비어있으면 '미지정'으로 표시 */}
           <Text style={styles.infoValue}>{userInfo?.dept_name || '부서 미지정'}</Text>
         </View>
         <View style={styles.infoRow}>

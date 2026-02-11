@@ -1,0 +1,15 @@
+=== 동시성 테스트 리포트 (10 Threads) ===
+테스트 시간: 2026-02-10 15:37:39
+--------------------------------------------------
+User 0 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 1 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 2 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 3 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 4 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 5 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 6 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 7 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 8 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+User 9 에러: [Errno 2] No such file or directory: 'D:\\final_project\\VOC_PCB\\test_sample.jpg'
+--------------------------------------------------
+=== 테스트 완료 ===

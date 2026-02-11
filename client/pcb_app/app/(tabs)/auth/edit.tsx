@@ -6,7 +6,7 @@ import axios from 'axios';
 import { API_URL } from '../../../constants/Config';
 import { Ionicons } from '@expo/vector-icons';
 
-/** [식별명: 회원정보 수정 페이지] */
+// 회원정보 수정 페이지
 export default function EditProfileScreen() {
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -44,19 +44,20 @@ export default function EditProfileScreen() {
         dept_name: dept,
       });
 
-      // 변경 사항이 없을 경우
-      if (response.data.status === 'no_change') {
-        Alert.alert("알림", "변경된 내용이 없습니다.");
-        return; // 함수 종료 (이전 화면으로 돌아가지 않음)
-      }
-
-      // 변경 성공 시
+      // 변경 성공 시 로직
       if (response.data.status === 'success') {
-        const updatedInfo = JSON.stringify(response.data.user_info);
+        const newUserInfo = {
+          ...userInfo,
+          name: name,
+          dept_name: dept,
+        };
+        
+        const updatedInfoString = JSON.stringify(newUserInfo);
+
         if (Platform.OS !== 'web') {
-          await SecureStore.setItemAsync('user_session', updatedInfo);
+          await SecureStore.setItemAsync('user_session', updatedInfoString);
         } else {
-          localStorage.setItem('user_session', updatedInfo);
+          localStorage.setItem('user_session', updatedInfoString);
         }
 
         Alert.alert("성공", "정보가 수정되었습니다.", [
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15, 
     borderBottomWidth: 1, 
     borderBottomColor: '#eee',
-    backgroundColor: '#fff' // 배경색 명시
+    backgroundColor: '#fff'
   },
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
   completeText: { color: '#007AFF', fontSize: 16, fontWeight: 'bold' },

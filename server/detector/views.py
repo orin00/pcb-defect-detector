@@ -14,15 +14,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework import status
-from .serializers import CompanyUserRegistrationSerializer, UserListSerializer, UserRoleUpdateSerializer
+from .serializers import CompanyUserRegistrationSerializer, UserListSerializer, UserRoleUpdateSerializer, AnalysisCommentSerializer
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
 from django.http import FileResponse, Http404
 from django.utils.encoding import smart_str
-from .models import Users, PcbProjects, Companies, AnalysisMaterials
+from .models import Users, PcbProjects, Companies, AnalysisMaterials, AnalysisComments
 from django.conf import settings
 
-# [경로 설정 보완] 상대 경로 기준점 설정
+# 상대 경로 기준점 설정
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # YOLOv5 설정 경로
@@ -38,7 +38,7 @@ try:
 except Exception as e:
     print(f"❌ 모델 로드 실패: {e}")
 
-# [API 1] AI 탐지 API
+# AI 결함 탐지 api
 class DetectView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
@@ -74,10 +74,55 @@ class DetectView(APIView):
             traceback.print_exc()
             return Response({"status": "error", "message": str(e)}, status=500)
 
+class AnalysisCommentView(APIView):
+    def get(self, request):
+        material_id = request.query_params.get('material_id')
+        if not material_id:
+            return Response({"error": "material_id가 필요합니다."}, status=400)
+        
+        # 부모 댓글만 조회하면 시리얼라이저가 대댓글을 트리구조로 가져옴
+        comments = AnalysisComments.objects.filter(material_id=material_id, parent__isnull=True).order_by('created_at')
+        serializer = AnalysisCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        author_id = request.data.get('author_id') or request.session.get('user_id')
+        if not author_id:
+            return Response({"error": "로그인이 필요합니다."}, status=401)
+
+        data = request.data.copy()
+        data['author'] = author_id
+        
+        serializer = AnalysisCommentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request):
+        comment_id = request.data.get('comment_id')
+        user_id = request.data.get('user_id')
+
+        if not comment_id:
+            return Response({"error": "삭제할 댓글 ID가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            comment = AnalysisComments.objects.get(id=comment_id)
+            
+            # 본인 확인 - 작성자만 삭제 가능
+            if comment.author_id != int(user_id):
+                return Response({"error": "본인의 댓글만 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+            # 대댓글이 있는 경우에도 CASCADE 설정때문에 같이 삭제됨
+            comment.delete()
+            return Response({"status": "success", "message": "댓글이 삭제되었습니다."})
+            
+        except AnalysisComments.DoesNotExist:
+            return Response({"error": "존재하지 않는 댓글입니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class CompanyMemberManagementView(APIView):
-    """
-    동일 법인 내 사용자 조회 및 권한 수정
-    """
     def get(self, request):
         user_id = request.session.get('user_id')
         company_id = request.session.get('company_id')
@@ -90,7 +135,7 @@ class CompanyMemberManagementView(APIView):
             if current_user.role != 'DIRECTOR':
                 return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
             
-            # [핵심] select_related를 사용하여 소속 회사 정보(Companies)를 한꺼번에 가져옴
+            # select_related를 사용하여 소속 회사 정보(Companies)를 한꺼번에 가져옴
             members = Users.objects.filter(company_id=company_id).select_related('company').exclude(id=user_id)
             
             # 데이터를 수동으로 구성하여 corporate_name을 명확히 포함시킴
@@ -102,7 +147,6 @@ class CompanyMemberManagementView(APIView):
                     "name": m.name,
                     "role": m.role,
                     "dept_name": m.dept_name,
-                    # 이 부분이 들어가야 '주식회사 ㅋㅋㅋ'가 나옵니다.
                     "corporate_name": m.company.corporate_name 
                 })
                 
@@ -112,7 +156,6 @@ class CompanyMemberManagementView(APIView):
             return Response({"error": "사용자 정보를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
-        # ... (기존 post 로직은 동일하되 쉼표 등 문법 오류 주의) ...
         user_id = request.session.get('user_id')
         if not user_id:
             return Response({"error": "로그인이 필요합니다."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -135,7 +178,7 @@ class CompanyMemberManagementView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# [API 2] 프로젝트 업로드 및 물리 저장 (DB에는 파일명만 저장)
+# 프로젝트 업로드 및 물리 저장, 데이터베이스에는 파일 이름만 저장함ㅁ
 class ProjectUploadView(APIView):
     def post(self, request):
         try:
@@ -146,24 +189,24 @@ class ProjectUploadView(APIView):
             excel_name = request.data.get('excel_name')
             description = request.data.get('description', '')
 
-            # 1. 이미지 파일 저장
+            # 이미지 파일 저장
             if image_data and ',' in image_data:
                 imgstr = image_data.split(',')[1]
             else:
                 imgstr = image_data
             img_bytes = base64.b64decode(imgstr)
             
-            # [수정] DB용 파일명 생성
+            # 데이터베이스에 저장될 파일명 생성하고
             img_filename = f"pcb_{project_id}_{int(time.time())}.jpg"
             save_dir_img = os.path.join(settings.MEDIA_ROOT, "detected_results")
             if not os.path.exists(save_dir_img): 
                 os.makedirs(save_dir_img)
             
-            # 실제 파일 물리 저장
+            # 실제 파일을 저장_volume\detected_results
             with open(os.path.join(save_dir_img, img_filename), 'wb') as f:
                 f.write(img_bytes)
 
-            # 2. 엑셀/CSV 파일 저장
+            # 엑셀/CSV 파일 저장_volume\performance_data
             excel_filename = ""
             if excel_data:
                 save_dir_excel = os.path.join(settings.MEDIA_ROOT, "performance_data")
@@ -175,13 +218,12 @@ class ProjectUploadView(APIView):
                 with open(os.path.join(save_dir_excel, excel_filename), 'wb') as f:
                     f.write(excel_bytes)
 
-            # 3. [핵심 수정] DB 기록 - 절대 경로가 아닌 생성된 '파일명'만 저장
             project = PcbProjects.objects.get(id=project_id)
             AnalysisMaterials.objects.create(
                 project=project,
                 author_id=author_id,
-                defect_image_url=img_filename,       # 파일명만 저장 (ex: pcb_5_123.jpg)
-                performance_data_url=excel_filename, # 파일명만 저장 (ex: 123_test.xlsx)
+                defect_image_url=img_filename,
+                performance_data_url=excel_filename,
                 description=description
             )
             
@@ -190,7 +232,8 @@ class ProjectUploadView(APIView):
             traceback.print_exc()
             return Response({"status": "error", "message": str(e)}, status=500)
 
-# 분석 결과 목록 조회 (파일명 -> 전체 URL 변환)
+# 분석 결과 목록 조회 
+# 일단 파일명을 URL로 변환하게 구현은 해놨는데 문제생기면 나중에 손 볼 예정
 class AnalysisMaterialListView(APIView):
     def get(self, request):
         try:
@@ -200,11 +243,8 @@ class AnalysisMaterialListView(APIView):
             
             result_data = []
             for m in materials:
-                # [이미지] 경로 생성
                 img_name = os.path.basename(m.defect_image_url) if m.defect_image_url else ""
                 defect_full_url = f"{base_url}{settings.MEDIA_URL}detected_results/{img_name}" if img_name else ""
-                
-                # 성능 데이터 엑셀 경로 생성
                 excel_name = os.path.basename(m.performance_data_url) if m.performance_data_url else ""
                 performance_full_url = f"{base_url}{settings.MEDIA_URL}performance_data/{excel_name}" if excel_name else ""
                 
@@ -341,16 +381,15 @@ class ProjectView(APIView):
             
         return Response({"status": "success", "data": project_list}, status=200)
 
-    # [신규 추가] 프로젝트 삭제 API
+    # 프로젝트 삭제 api
     def delete(self, request):
-        # 세션 혹은 요청 데이터에서 권한 확인
+        # 권한 확인
         session_role = request.session.get('user_role') or request.session.get('role')
         request_role = request.data.get('user_role')
         final_role = session_role or request_role
         
         project_id = request.query_params.get('id')
 
-        # 1. 권한 체크
         if final_role not in ['DIRECTOR', 'MANAGER']:
             return Response({"error": "삭제 권한이 없습니다."}, status=403)
 
@@ -359,7 +398,6 @@ class ProjectView(APIView):
 
         try:
             project = PcbProjects.objects.get(id=project_id)
-            # 관련 데이터(AnalysisMaterials 등)는 DB의 CASCADE 설정에 의해 자동 삭제됩니다.
             project.delete()
             return Response({"status": "success", "message": "프로젝트가 삭제되었습니다."})
         except PcbProjects.DoesNotExist:
@@ -369,7 +407,6 @@ class ProjectView(APIView):
 
 class ProjectStatusUpdateView(APIView):
     def post(self, request):
-        # [강제 해결 로직] 세션이 없더라도 클라이언트가 보낸 권한이 유효하면 승인
         session_role = request.session.get('user_role') or request.session.get('role')
         request_role = request.data.get('user_role')
         

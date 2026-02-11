@@ -7,6 +7,11 @@ __pycache__/
 .venv/
 venv/
 .env
+node_modules/
+*.pt
+runs/
+db.sqlite3
+.ipynb_checkpoints/
 
 # OS 파일
 .DS_Store

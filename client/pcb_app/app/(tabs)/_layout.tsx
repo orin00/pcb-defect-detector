@@ -4,9 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-/** [식별명: 탭 레이아웃 권한 제어본] 
- * 로그인된 유저의 권한이 DIRECTOR 또는 MANAGER일 때만 '멤버관리' 탭을 표시합니다.
- */
+
+// 로그인된 유저의 권한이 DIRECTOR or MANAGER면 멤버관리 표시
 export default function TabLayout() {
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -22,7 +21,7 @@ export default function TabLayout() {
 
         if (session) {
           const parsed = JSON.parse(session);
-          setUserRole(parsed.role); // 세션에서 권한(role) 추출
+          setUserRole(parsed.role); // 세션에서 권한 꽂아서 전달
         }
       } catch (e) {
         console.error("Role Load Error:", e);
@@ -31,7 +30,7 @@ export default function TabLayout() {
     getRole();
   }, []);
 
-  // 관리자 권한 여부 확인 (DIRECTOR 또는 MANAGER)
+  // 관리자 권한 확인
   const isAdmin = userRole === 'DIRECTOR' || userRole === 'MANAGER';
 
   return (
@@ -76,14 +75,6 @@ export default function TabLayout() {
         name="record/edit"
         options={{ href: null, tabBarStyle: { display: 'none' }, headerShown: false }}
       />
-      
-      <Tabs.Screen
-        name="calender/index"
-        options={{
-          title: '일정',
-          tabBarIcon: ({ color }) => <Ionicons name="calendar-outline" size={24} color={color} />,
-        }}
-      />
 
       <Tabs.Screen
         name="auth/index"
@@ -93,17 +84,15 @@ export default function TabLayout() {
         }}
       />
 
-      {/* [수정] 권한에 따른 멤버관리 탭 노출 제어 */}
       <Tabs.Screen
         name="member/index"
         options={{
           title: '멤버관리',
-          href: isAdmin ? '/(tabs)/member' : null, // 권한 없으면 탭 바에서 제거
+          href: isAdmin ? '/member' : null, 
           tabBarIcon: ({ color }) => <Ionicons name="people" size={24} color={color} />,
         }}
       />
       
-      {/* 상세 페이지들 숨김 처리 */}
       <Tabs.Screen
         name="member/edit"
         options={{ href: null, tabBarStyle: { display: 'none' }, headerShown: false }}

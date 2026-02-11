@@ -6,12 +6,12 @@ import axios from 'axios';
 import { API_URL } from '../../../constants/Config';
 import { Ionicons } from '@expo/vector-icons';
 
-/** [식별명: 멤버 권한 수정 상세] */
+// 멤버 권한 수정
 export default function MemberEditScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   
-  // [체크] 넘겨받은 파라미터가 없거나 잘못되었을 경우 기본값 처리
+  // 넘겨받은 파라미터가 없거나 잘못되었을 경우 기본값 처리
   const corporateName = params.corporate_name || "소속 정보 없음";
   const deptName = params.dept_name || "부서 미지정";
   const userName = params.name || "이름 없음";
@@ -48,7 +48,6 @@ export default function MemberEditScreen() {
       <View style={styles.card}>
         <View style={styles.infoRow}>
           <Text style={styles.label}>소속 법인</Text>
-          {/* [핵심] 여기서 잘못된 값이 출력된다면, 이전 화면(목록)에서 잘못 보낸 것임 */}
           <Text style={styles.value}>{corporateName}</Text>
         </View>
         <View style={styles.infoRow}>

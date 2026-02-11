@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Companies
+from .models import Users, Companies, AnalysisComments
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
 
@@ -16,14 +16,14 @@ class UserRoleUpdateSerializer(serializers.Serializer):
 
     def update_role(self, admin_user, target_user_id, new_role):
         try:
-            # 1. 대상 사용자 조회
+            # 대상 사용자 조회
             target_user = Users.objects.get(id=target_user_id)
             
-            # 2. 같은 법인 소속인지 확인
+            # 같은 법인 소속인지 확인
             if target_user.company_id != admin_user.company_id:
                 return False, "해당 사용자는 동일한 법인 소속이 아닙니다."
             
-            # 3. 권한 업데이트
+            # 권한 업데이트
             target_user.role = new_role
             target_user.save()
             return True, "권한이 성공적으로 변경되었습니다."
@@ -86,3 +86,20 @@ class CompanyUserRegistrationSerializer(serializers.Serializer):
                 company.save()
 
             return user
+
+# --- 댓글 관련 시리얼라이저 추가 ---
+class AnalysisCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.name', read_only=True)
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AnalysisComments
+        fields = ['id', 'material', 'author', 'author_name', 'parent', 'content', 'replies', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def get_replies(self, obj):
+        # 대댓글이 있는 경우만 재귀적으로 호출 (최상위 댓글인 경우에만 자식들을 가져옴)
+        if obj.parent is None:
+            serializer = AnalysisCommentSerializer(obj.replies.all(), many=True)
+            return serializer.data
+        return []

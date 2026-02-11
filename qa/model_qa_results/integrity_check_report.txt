@@ -1,0 +1,29 @@
+==================================================
+데이터 무결성 검증 상세 리포트
+검사 시각: 2026-02-10 17:39:54
+검증 대상 테이블: analysis_materials
+기준 Root: D:\final_project\server\volume
+--------------------------------------------------
+[요약 결과]
+ - 전체 레코드: 4건
+ - 정상 매칭: 4건
+ - 유실 발생: 0건
+--------------------------------------------------
+[정상 매칭 상세 내역]
+ID 5 [매칭 완료]
+  └ 이미지: pcb_8_1770139655.jpg (위치: detected_results/)
+  └ 엑셀  : 1770139655_test_excel1.xlsx (위치: performance_data/)
+
+ID 6 [매칭 완료]
+  └ 이미지: pcb_9_1770140183.jpg (위치: detected_results/)
+  └ 엑셀  : 1770140183_test_excel1.xlsx (위치: performance_data/)
+
+ID 7 [매칭 완료]
+  └ 이미지: pcb_10_1770178485.jpg (위치: detected_results/)
+  └ 엑셀  : 1770178485_test_excel1.xlsx (위치: performance_data/)
+
+ID 8 [매칭 완료]
+  └ 이미지: pcb_10_1770214618.jpg (위치: detected_results/)
+  └ 엑셀  : 1770214618_test_excel1.xlsx (위치: performance_data/)
+
+==================================================

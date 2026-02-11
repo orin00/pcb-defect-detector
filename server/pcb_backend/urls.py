@@ -8,6 +8,5 @@ urlpatterns = [
     path('api/', include('detector.urls')), 
 ]
 
-# /volume/ 주소로 요청이 오면 D:\final_project\volume 폴더를 뒤지겠다는 선언
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -13,7 +13,7 @@ interface Project {
   company_id: number;
   model_name: string;
   status: string;
-  created_at: string; // 서버에서 "2026-02-03T08:26:54.680851" 형태로 옴
+  created_at: string;
 }
 
 interface RecordsProps {
@@ -67,14 +67,10 @@ const Records: React.FC<RecordsProps> = ({ onPressItem }) => {
     }
   };
 
-  /** * [수정 핵심] 날짜 포맷 함수 
-   * 서버의 UTC 시간을 로컬 시간(KST)으로 변환하여 "YYYY-MM-DD HH:mm" 형식으로 출력합니다.
-   */
   const formatKSTDate = (dateString: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     
-    // 타임존 보정이 포함된 한국어 형식 변환
     return date.toLocaleString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
@@ -123,7 +119,6 @@ const Records: React.FC<RecordsProps> = ({ onPressItem }) => {
       >
         <View style={styles.cardContent}>
           <Text style={styles.modelName}>{item.model_name}</Text>
-          {/* 수정된 날짜 포맷 함수 적용 */}
           <Text style={styles.date}>{formatKSTDate(item.created_at)}</Text>
         </View>
         

@@ -1,10 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Platform } from 'react-native';
-import { useRouter, Stack } from 'expo-router'; // Stack 추가
+import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Records from './records';
 
-/** [식별명: 프로젝트 인덱스 화면] */
 export default function RecordIndex() {
   const router = useRouter();
 
@@ -23,7 +22,7 @@ export default function RecordIndex() {
           style={styles.headerRight} 
           onPress={() => router.push({
             pathname: '/(tabs)/record/edit',
-            params: { from: '/(tabs)/record' } // [수정] 이전 경로 전달
+            params: { from: '/(tabs)/record' }
           })}
         >
           <Text style={styles.addButtonText}>신규 등록</Text>
@@ -41,7 +40,7 @@ export default function RecordIndex() {
                 model_name: project.model_name,
                 status: project.status,
                 created_at: project.created_at,
-                from: '/(tabs)/record' // [수정] 이전 경로 전달
+                from: '/(tabs)/record'
               }
             });
           }} 
