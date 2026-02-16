@@ -1,18 +1,40 @@
 === [QA] 역할별 권한 분리 테스트 리포트 ===
+테스트 완료 시간: 2026-02-16 16:46:51
 
-경로: /detect/
- - [DIRECTOR] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/detect/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
- - [MANAGER] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/detect/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
- - [STAFF] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/detect/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
+[API 경로: /company/members/]
+--------------------------------------------------
+--- [DIRECTOR] --- > 회원 관리 접속: 200
 
-경로: /admin/stats/
- - [DIRECTOR] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/admin/stats/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
- - [MANAGER] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/admin/stats/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: FAIL
- - [STAFF] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/admin/stats/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: FAIL
+[API 경로: /projects/]
+--------------------------------------------------
+--- [DIRECTOR] --- > 프로젝트 삭제 (ID:301): 200
 
-경로: /history/delete/
- - [DIRECTOR] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/history/delete/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
- - [MANAGER] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/history/delete/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: PASS
- - [STAFF] 접근 시도 -> 코드: Error(HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/history/delete/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다"))) | 결과: FAIL
+[API 경로: /detect/]
+--------------------------------------------------
+--- [DIRECTOR] --- > 결함 탐지 수행: 200
+
+[API 경로: /company/members/]
+--------------------------------------------------
+--- [MANAGER] --- > 회원 관리 접속: 403
+
+[API 경로: /projects/]
+--------------------------------------------------
+--- [MANAGER] --- > 프로젝트 삭제 (ID:302): 200
+
+[API 경로: /detect/]
+--------------------------------------------------
+--- [MANAGER] --- > 결함 탐지 수행: 200
+
+[API 경로: /company/members/]
+--------------------------------------------------
+--- [STAFF] --- > 회원 관리 접속: 403
+
+[API 경로: /projects/]
+--------------------------------------------------
+--- [STAFF] --- > 프로젝트 삭제 (ID:303): 403
+
+[API 경로: /detect/]
+--------------------------------------------------
+--- [STAFF] --- > 결함 탐지 수행: 200
 
 === 테스트 완료 ===

@@ -383,25 +383,37 @@ class ProjectView(APIView):
 
     # 프로젝트 삭제 api
     def delete(self, request):
-        # 권한 확인
+        # 1. 권한 확인 (기존 로직 유지)
         session_role = request.session.get('user_role') or request.session.get('role')
-        request_role = request.data.get('user_role')
+        # request.data가 비어있을 수 있으므로 .get() 사용 시 주의
+        request_role = request.data.get('user_role') if isinstance(request.data, dict) else None
         final_role = session_role or request_role
         
-        project_id = request.query_params.get('id')
+        # 2. [수정 포인트] 프로젝트 ID 추출 로직 보완
+        # 주피터나 앱에서 'id' 또는 'project_id' 중 무엇으로 보내든 읽을 수 있도록 수정합니다.
+        # 또한 Query Params와 Body(data) 양쪽을 다 체크합니다.
+        project_id = (
+            request.query_params.get('id') or 
+            request.query_params.get('project_id') or 
+            (request.data.get('project_id') if isinstance(request.data, dict) else None) or
+            (request.data.get('id') if isinstance(request.data, dict) else None)
+        )
 
+        # 3. 권한 체크 (정상 상태 확인)
         if final_role not in ['DIRECTOR', 'MANAGER']:
-            return Response({"error": "삭제 권한이 없습니다."}, status=403)
+            return Response({"error": f"삭제 권한이 없습니다. (현재 권한: {final_role})"}, status=403)
 
+        # 4. ID 검증
         if not project_id:
-            return Response({"error": "삭제할 프로젝트 ID가 없습니다."}, status=400)
+            # 400 에러 발생 지점: 여기서 명확하게 어떤 키값이 누락되었는지 알려주도록 수정
+            return Response({"error": "삭제할 프로젝트 ID(id 또는 project_id)가 없습니다."}, status=400)
 
         try:
             project = PcbProjects.objects.get(id=project_id)
             project.delete()
             return Response({"status": "success", "message": "프로젝트가 삭제되었습니다."})
         except PcbProjects.DoesNotExist:
-            return Response({"error": "프로젝트를 찾을 수 없습니다."}, status=404)
+            return Response({"error": f"ID {project_id} 프로젝트를 찾을 수 없습니다."}, status=404)
         except Exception as e:
             return Response({"status": "error", "message": str(e)}, status=500)
 
